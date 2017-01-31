@@ -40,34 +40,35 @@ function findLocations(results, status){
     }
 }
 
-function createMarker(loc) {
+function createMarker(place) {
     var marker = new google.maps.Marker({
         map: map,
-        position: loc.geometry.location,
+        position: place.geometry.location,
         animation: google.maps.Animation.DROP
     });
 
     marker.addListener('click', function() {
-        service.getDetails(loc, function(result, status) {
+        service.getDetails(place, function(result, status) {
             if (status !== google.maps.places.PlacesServiceStatus.OK) {
                 console.error(status);
                 return;
             }
-            populateInfoWindow(this, infowindow);
-            console.log("it worked " + this);
-            // infowindow.setContent(result.name);
-            // infowindow.open(map.marker);
+            // populateInfoWindow(this, infowindow);
+            console.log("it worked " + result.name);
+            infowindow.setContent(result.name);
+            infowindow.open(map, marker);
         });
     });
 }
 
 function populateInfoWindow(marker, infowindow) {
-    if (infowindow.marker == marker) {
-        infowindow.setContent('');
-            infowindow.marker = marker;
-            infowindow.addListener('closeclick', function() {
-                infowindow.marker = null;
-            });
-            infowindow.open(map, marker);
-    }
+    // if (infowindow.marker == marker) {
+    //     infowindow.setContent('');
+    //         infowindow.marker = marker;
+    //         infowindow.addListener('closeclick', function() {
+    //             infowindow.marker = null;
+    //         });
+    //         infowindow.open(map, marker);
+    // }
+    infowindow.open(map, marker);
 }
