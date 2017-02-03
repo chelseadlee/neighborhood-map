@@ -21,13 +21,33 @@
     </head>
     <body>
         <div class="container">
+            <div id="infobox">
+                <div id="filters">
+                    <h3>Filter Coffee Shops</h3>
+                    <p>filter1
+                        <input data-bind="textInput: filter" />
+                    </p>
+                </div>
+                <div id="place-list">
+                    <ul>
+                        <li>
+                            <h3 data-bind="text: placeName" class="name"></h3>
+                            <p data-bind="text: placeAddress" class ="address"></p>
+                            <p data-bind="text: reviews" class="reviews"></p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
             <div id="map"></div>
         </div>
     </body>
     <footer>
-        <script type="text/javascript" src="js/app.js"></script>
 
         <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=initMap"></script>
-    <!--    // <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.1/knockout-min.js"></script> -->
+
+        <script type="text/javascript" src="js/knockout.js"></script>
+
+        <script type="text/javascript" src="js/app.js"></script>
+
     </footer>
 </html>
