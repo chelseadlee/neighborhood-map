@@ -1,52 +1,57 @@
-var PlaceList = function(data) {
+var Place = function(data){
+    //create observable properties from return location
     this.name = ko.observable(data.name);
     this.address = ko.observable(data.address);
-};
-
-var Place = function(place){
-    //create observable properties from return location
-    //this is Cat from catclicker
 }
 
 //locations model data should be passed
-var PlaceListViewModel = function(googleMapsMarkers) {
+var PlaceListViewModel = function(placesArr) {
     var self = this;
 
     //delete this line markers don't need to be observed since not data
-    self.markers = ko.observableArray(googleMapsMarkers);
+    // self.markers = ko.observableArray(googleMapsMarkers);
     //create observable array of Place instances
     //
 
+    // this.places = ko.utils.arrayMap(placesArr, function(place) {
+    //     return new Place(place.name, place.address);
+    // });
 
-    self.filter = ko.observable("");
+    self.places = ko.observableArray([]);
+
+    placesArr.forEach(function(place) {
+        self.places.push( new Place(place) );
+    });
+
+    self.queryText = ko.observable("");
+
     // filter the marker locations using ko utility filter
-    filteredPlaces = ko.computed(function() {
-        var filter = self.filter().toLowerCase();
+    self.filteredList = ko.computed( function() {
+        var filter = self.queryText().toLowerCase();
         if (!filter) {
-            return self.markers();
+            console.log("No filter!");
+            return self.places();
         } else {
-            return ko.utils.arrayFilter(self.items(), function(marker) {
-                return ko.utils.indexOf(place.name().toLowerCase(), filter);
+            return ko.utils.arrayFilter(self.places(), function(place) {
+                var string = place.name().toLowerCase();
+                console.log("hey " + string);
+                return (string.indexOf(filter) !== -1);
             });
         }
     }, PlaceListViewModel);
 
-    self.places = ko.observableArray([]);
-    self.newPlace = ko.observable();
-
-    markers.forEach(function(placeItem) {
-        self.places.push (new Place(placeItem));
-    });
+    // placesArr.forEach(function(placeItem) {
+    //     self.places.push (new Place(placeItem));
+    // });
 }
 
 
 
-// Google Maps API
+//********* Google Maps API **********//
+
 var map;
 var service;
 var infowindow;
-var locations = [];
-var markers = [];
 
 function initMap() {
     var ballard = new google.maps.LatLng(47.669525,-122.377396);
@@ -68,19 +73,24 @@ function initMap() {
     service.nearbySearch(request, findLocations);
     //once locations array initialized in findLocations callback
     //the view model can be initialized pass into the constructor function
-    ko.applyBindings(new PlaceListViewModel(markers));//markers should be locations
 
 }
 
+// findLocations function stores returned places in places array
 function findLocations(results, status){
     if (status == google.maps.places.PlacesServiceStatus.OK) {
-        for (var i = 0; i < results.length; i++) {
-            var place = results[i];
-            //store returned places in locations array, this is your data/model
-
-            createMarker(results[i]);
-            markers.push(results[i]);
-        }
+        // for (var i = 0; i < results.length; i++) {
+        //     var place = results[i];
+        //     //store returned places in locations array, this is your data/model
+        //     // results.forEach(function(place) {
+        //     //     placesArr.push( new Place (place));
+        //     // })
+        //     placesArr.push( results[i] );
+        //     // placesArr.push(results[i]);
+        //     createMarker(results[i]);
+        //     // markers.push(results[i]);
+        // }
+    ko.applyBindings(new PlaceListViewModel(results));//markers should be locations
     }
 }
 

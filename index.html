@@ -17,6 +17,11 @@
             margin: 0;
             padding: 0;
         }
+
+        #infobox {
+            float: left;
+            padding: 1%;
+        }
         </style>
     </head>
     <body>
@@ -24,16 +29,14 @@
             <div id="infobox">
                 <div id="filters">
                     <h3>Filter Coffee Shops</h3>
-                    <p>filter1
-                        <input data-bind="textInput: filter" />
-                    </p>
+                    <p>Filter Results: <input data-bind="textInput: queryText" /></p>
                 </div>
                 <div id="place-list">
-                    <ul>
+                    <ul class="results" data-bind="foreach: filteredList">
                         <li>
-                            <h3 data-bind="text: placeName" class="name"></h3>
-                            <p data-bind="text: placeAddress" class ="address"></p>
-                            <p data-bind="text: reviews" class="reviews"></p>
+                            <h3 data-bind="text: name" class="name"></h3>
+                            <p data-bind="text: address" class ="address"></p>
+                            <!-- <p data-bind="text: reviews" class="reviews"></p> -->
                         </li>
                     </ul>
                 </div>
