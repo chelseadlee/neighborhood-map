@@ -1,9 +1,12 @@
 var Place = function(data, selectPlace){
     var self = this;
     //create observable properties from return location
+    this.id = data.place_id;
     this.name = ko.observable(data.name);
     this.address = ko.observable(data.formatted_address);
-    this.id = ko.observable(data.place_id);
+    this.website = ko.observable(data.website);
+    this.phone = ko.observable(data.formatted_phone_number);
+    this.rating = ko.observable(data.rating);
     this.geometry = ko.observable(data.geometry.location);
     this.marker = new google.maps.Marker({
         name: this.name(),
@@ -13,24 +16,13 @@ var Place = function(data, selectPlace){
         animation: google.maps.Animation.DROP,
         visible: true
     }, this);
-    this.content = self.name() + " " + self.id();
 
     this.marker.addListener('click', function() {
-        // self.marker.setIcon(highlightedMarker);
         selectPlace(self);
-        // infowindow.setContent(self.name());
-        // infowindow.open(map, self.marker);
-        populateInfoWindow(self);
     });
-}
+};
 
 
-
-// Info to display in infowindow:
-// name, formatted address, hours
-
-// Info to display in LI:
-// name, formatted address,
 
 //locations model data should be passed
 var PlaceListViewModel = function(placesArr) {
@@ -48,21 +40,38 @@ var PlaceListViewModel = function(placesArr) {
         console.log(selectedPlace.name());
         self.displayDetails = ko.observable(true);
         self.highlight(place);
-        populateInfoWindow(place);
-    }
+        self.populateInfoWindow(place);
+    };
+
+    self.populateInfoWindow = function(place) {
+        var placename = '<h4>' + place.name() + '</h4>';
+        var placeaddress = '<p>' + place.address() + '</p>';
+        var placewebsite = '<a class="website" href="' + place.website() + '">  website  </a>';
+        var placephone = '<span class="phone-number">  ' + place.phone() + ' </span>';
+        var placerating = '<p>Avg. Google Rating: ' + place.rating() + '</p>';
+        infowindow.setContent(placename + placeaddress + '<p>' + placewebsite + placephone + '</p>' + placerating);
+
+        infowindow.open(map, place.marker);
+    };
 
     self.highlight = function(place) {
         ko.utils.arrayForEach(self.filteredList(), function(place) {
             place.marker.setIcon(defaultMarker);
         })
         place.marker.setIcon(highlightedMarker);
-    }
+    };
 
     self.places = ko.observableArray([]);
 
-    placesArr.forEach(function(place) {
-        self.places.push( new Place(place, self.selectPlace) );
+    // get details
+    placesArr.slice(0, 3).forEach(function(nearbyPlace) {
+        service.getDetails({
+            placeId: nearbyPlace.place_id
+        }, function (placeDetails, status) {
+            self.places.push(new Place(placeDetails, self.selectPlace));
+        });
     });
+
 
     self.queryText = ko.observable("");
 
@@ -85,7 +94,7 @@ var PlaceListViewModel = function(placesArr) {
             return filtered;
         }
     }, PlaceListViewModel);
-}
+};
 
 
 
@@ -99,7 +108,7 @@ var highlightedMarker;
 
 function initMap() {
     console.log("init map");
-    var ballard = new google.maps.LatLng(47.669525,-122.377396);
+    var ballard = new google.maps.LatLng(47.6686195,-122.3828064);
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: ballard,
@@ -113,7 +122,7 @@ function initMap() {
 
     var request  = {
         location: ballard,
-        radius: '800',
+        radius: '500',
         keyword: 'coffee'
     };
 
@@ -121,25 +130,11 @@ function initMap() {
     service.nearbySearch(request, findLocations);
     //once locations array initialized in findLocations callback
     //the view model can be initialized pass into the constructor function
-
 }
-
-
 
 // findLocations function stores returned places in places array
 function findLocations(results, status){
     if (status == google.maps.places.PlacesServiceStatus.OK) {
-        // for (var i = 0; i < results.length; i++) {
-        //     var place = results[i];
-        //     //store returned places in locations array, this is your data/model
-        //     // results.forEach(function(place) {
-        //     //     placesArr.push( new Place (place));
-        //     // })
-        //     placesArr.push( results[i] );
-        //     // placesArr.push(results[i]);
-        //     createMarker(results[i]);
-        //     // markers.push(results[i]);
-        // }
         ko.applyBindings(new PlaceListViewModel(results));
     }
 }
@@ -157,42 +152,3 @@ function makeMarkerIcon(markerColor) {
       new google.maps.Size(21,34));
   return markerImage;
 }
-
-// function createMarker(place) {
-//     var marker = new google.maps.Marker({
-//         map: map,
-//         position: place.geometry.location,
-//         animation: google.maps.Animation.DROP
-//     });
-
-//     marker.addListener('click', function() {
-//         service.getDetails(place, function(result, status) {
-//             if (status !== google.maps.places.PlacesServiceStatus.OK) {
-//                 console.error(status);
-//                 return;
-//             }
-//             // populateInfoWindow(this, infowindow);
-//             infowindow.setContent(result.name);
-//             console.log(JSON.stringify(result));
-//             infowindow.open(map, marker);
-//         });
-//     });
-// }
-
-function populateInfoWindow (place) {
-    infowindow.setContent(place.content);
-    infowindow.open(map, place.marker);
-}
-
-// function populateInfoWindow (marker, infowindow) {
-//     if (infowindow.marker == marker) {
-//         infowindow.setContent('');
-//             infowindow.marker = marker;
-//             infowindow.addListener('closeclick', function() {
-//                 infowindow.marker = null;
-//             });
-//             infowindow.open(map, marker);
-//     }
-//     infowindow.open(map, marker);
-// }
-
