@@ -1,6 +1,6 @@
 'use strict';
 
-var Place = function(data, yData, selectPlace){
+var Place = function(data, yData, selectPlace, highlight){
     var self = this;
     //create observable properties from return location
     this.id = data.place_id;
@@ -23,6 +23,9 @@ var Place = function(data, yData, selectPlace){
     this.marker.addListener('click', function() {
         selectPlace(self);
     });
+    this.marker.addListener('mouseover', function() {
+        highlight(self, visitedMarker);
+    });
 };
 
 
@@ -43,7 +46,8 @@ var PlaceListViewModel = function(placesArr) {
         selectedPlace = place;
         console.log(selectedPlace.name());
         self.showDetails = ko.observable(true);
-        self.highlight(place);
+        place.marker.setIcon(visitedMarker);
+        self.highlight(place, highlightedMarker);
         self.populateInfoWindow(place);
     };
 
@@ -59,11 +63,11 @@ var PlaceListViewModel = function(placesArr) {
         infowindow.open(map, place.marker);
     };
 
-    self.highlight = function(place) {
+    self.highlight = function(place, marker) {
         ko.utils.arrayForEach(self.filteredList(), function(place) {
             place.marker.setIcon(defaultMarker);
         })
-        place.marker.setIcon(highlightedMarker);
+        place.marker.setIcon(marker);
     };
 
     self.places = ko.observableArray([]);
@@ -124,7 +128,7 @@ var PlaceListViewModel = function(placesArr) {
         }, function (placeDetails, status) {
             if (status == google.maps.places.PlacesServiceStatus.OK) {
                 if(otherCallbackReturned){
-                    self.places.push(new Place(placeDetails, yData, self.selectPlace));
+                    self.places.push(new Place(placeDetails, yData, self.selectPlace, self.highlight));
                 }
             }
             otherCallbackReturned = true;
@@ -133,7 +137,7 @@ var PlaceListViewModel = function(placesArr) {
 
         self.getYelpData(nearbyPlace, function(results){
             if(otherCallbackReturned){
-                self.places.push(new Place(googlePlaceDetails, results, self.selectPlace));
+                self.places.push(new Place(googlePlaceDetails, results, self.selectPlace, self.highlight));
             }
             yData = results;
             otherCallbackReturned = true;
@@ -167,11 +171,12 @@ var PlaceListViewModel = function(placesArr) {
 
 //********* Google Maps API **********//
 
-var map;
-var service;
-var infowindow;
-var defaultMarker;
-var highlightedMarker;
+var map,
+    service,
+    infowindow,
+    defaultMarker,
+    highlightedMarker,
+    visitedMarker;
 
 function initMap() {
     console.log("init map");
@@ -184,6 +189,7 @@ function initMap() {
 
     defaultMarker = makeMarkerIcon('790000');
     highlightedMarker = makeMarkerIcon('00793D');
+    visitedMarker = makeMarkerIcon('c74438');
 
     infowindow = new google.maps.InfoWindow();
 
@@ -229,4 +235,12 @@ function makeMarkerIcon(markerColor) {
       new google.maps.Point(10, 34),
       new google.maps.Size(21,34));
   return markerImage;
+}
+
+function toggleBounce() {
+    if (marker.getAnimation() !== null) {
+        marker.setAnimation(null);
+    } else {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+    }
 }
