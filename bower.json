@@ -1,0 +1,21 @@
+{
+  "name": "bower_components",
+  "homepage": "https://github.com/chelseadlee/neighborhood-map",
+  "authors": [
+    "chelseadlee <chelsea.d.lee12@gmail.com>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockout": "^3.4.1",
+    "oauth-signature": "^1.3.1"
+  }
+}

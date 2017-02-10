@@ -1,4 +1,6 @@
-var Place = function(data, selectPlace){
+'use strict';
+
+var Place = function(data, yData, selectPlace){
     var self = this;
     //create observable properties from return location
     this.id = data.place_id;
@@ -16,11 +18,13 @@ var Place = function(data, selectPlace){
         animation: google.maps.Animation.DROP,
         visible: true
     }, this);
+    this.yelpRating = ko.observable(yData);
 
     this.marker.addListener('click', function() {
         selectPlace(self);
     });
 };
+
 
 
 
@@ -49,7 +53,8 @@ var PlaceListViewModel = function(placesArr) {
         var placewebsite = '<a class="website" href="' + place.website() + '">  website  </a>';
         var placephone = '<span class="phone-number">  ' + place.phone() + ' </span>';
         var placerating = '<p>Avg. Google Rating: ' + place.rating() + '</p>';
-        infowindow.setContent(placename + placeaddress + '<p>' + placewebsite + placephone + '</p>' + placerating);
+        var yelpData = '<p>Avg. Yelp Rating: ' + place.yelpRating() + '<p>';
+        infowindow.setContent(placename + placeaddress + '<p>' + placewebsite + placephone + '</p>' + placerating + yelpData);
 
         infowindow.open(map, place.marker);
     };
@@ -62,16 +67,79 @@ var PlaceListViewModel = function(placesArr) {
     };
 
     self.places = ko.observableArray([]);
+    self.ajaxResults = [];
 
-    // get details
+        //********* Yelp API **********//
+    self.getYelpData = function(placeLoc, callback) {
+        // Read API keys
+        function nonce_generate() {
+            return (Math.floor(Math.random() * 1e12).toString());
+        }
+        var testlocation = '47.687802,-122.355656';
+        var name = placeLoc.name;
+        var yelp_url = 'http://api.yelp.com/v2/search?';
+        var httpMethod = 'GET',
+            parameters = {
+                oauth_consumer_key: '62Dis_EM2VpJWMj5HJmN2g',
+                oauth_token: 'z26Io3gYEFHJTZHSJJdt6N2Mu6N6bLJ5',
+                oauth_nonce: nonce_generate(),
+                oauth_timestamp: Math.floor(Date.now()/1000),
+                oauth_signature_method: 'HMAC-SHA1',
+                oauth_version: '1.0',
+                callback: 'cb',
+                location: 'Seattle',
+                term: name
+            },
+            consumerSecret = 'gzFGe9GulzBxi2zyV5M0TN3dPIU',
+            tokenSecret =  'ypxDSqySN4bf7Avp8ANucYDyKL8';
+            // generates a RFC 3986 encoded, BASE64 encoded HMAC-SHA1
+        var encodedSignature = oauthSignature.generate(httpMethod, yelp_url, parameters, consumerSecret, tokenSecret, {encodeSignature: false});
+            parameters.oauth_signature = encodedSignature;
+
+        // Yelp settings
+        var settings = {
+            url: yelp_url,
+            data: parameters,
+            cache: true,
+            dataType: 'jsonp',
+            success: function(results) {
+                    var rating = results.businesses[0].rating;
+                    callback(rating);
+            },
+            error: function() {
+                console.log("error");
+            }
+        }
+
+        $.ajax(settings);
+    };
+
+    // get google place details
     placesArr.slice(0, 3).forEach(function(nearbyPlace) {
+        var otherCallbackReturned = false;
+        var googlePlaceDetails = null;
+        var yData = null;
         service.getDetails({
-            placeId: nearbyPlace.place_id
+            placeId: nearbyPlace.place_id,
+            geometry: nearbyPlace.geometry.location
         }, function (placeDetails, status) {
-            self.places.push(new Place(placeDetails, self.selectPlace));
+            if (status == google.maps.places.PlacesServiceStatus.OK) {
+                if(otherCallbackReturned){
+                    self.places.push(new Place(placeDetails, yData, self.selectPlace));
+                }
+            }
+            otherCallbackReturned = true;
+            googlePlaceDetails = placeDetails;
+        });
+
+        self.getYelpData(nearbyPlace, function(results){
+            if(otherCallbackReturned){
+                self.places.push(new Place(googlePlaceDetails, results, self.selectPlace));
+            }
+            yData = results;
+            otherCallbackReturned = true;
         });
     });
-
 
     self.queryText = ko.observable("");
 
@@ -130,6 +198,14 @@ function initMap() {
     service.nearbySearch(request, findLocations);
     //once locations array initialized in findLocations callback
     //the view model can be initialized pass into the constructor function
+
+    // Make Google Map responsive by centering map on window resize.
+    // google.maps.event.addDomListener(window, "resize", function() {
+    //     var center = map.getCenter();
+    //     google.maps.event.trigger(map, "resize");
+    //     map.setCenter(center);
+    // });
+
 }
 
 // findLocations function stores returned places in places array
@@ -152,3 +228,53 @@ function makeMarkerIcon(markerColor) {
       new google.maps.Size(21,34));
   return markerImage;
 }
+
+
+//********* Yelp API **********//
+
+// Read API keys
+
+// function nonce_generate() {
+//     return (Math.floor(Math.random() * 1e12).toString());
+// }
+
+// var yelp_url = 'http://api.yelp.com/v2/search?location=' + place.formatted_address();
+
+// var httpMethod = 'GET',
+//     parameters = {
+//         term: 'restaurants',
+//         location: 'Seattle',
+//         oauth_consumer_key: '62Dis_EM2VpJWMj5HJmN2g',
+//         oauth_token: 'z26Io3gYEFHJTZHSJJdt6N2Mu6N6bLJ5',
+//         oauth_nonce: nonce_generate(),
+//         oauth_timestamp: Math.floor(Date.now()/1000),
+//         oauth_version: '1.0',
+//         oauth_signature_method: 'hmac-sha1',
+//         callback: 'cb'
+//     },
+//     consumerSecret = 'gzFGe9GulzBxi2zyV5M0TN3dPIU',
+//     tokenSecret =  'ypxDSqySN4bf7Avp8ANucYDyKL8',
+//     // generates a RFC 3986 encoded, BASE64 encoded HMAC-SHA1
+// var encodedSignature = oauthSignature.generate(httpMethod, yelp_url, parameters, consumerSecret, tokenSecret, {encodeSignature: false});
+//     parameters.oauth_signature = encodedSignature;
+
+// // Yelp settings
+// var settings = {
+//     url: yelp_url,
+//     data: parameters,
+//     cache: true,
+//     dataType: 'jsonp',
+//     success: function(results {
+//         var yelpUrl,
+//             yelpSnippet,
+//             yelpStars;
+//         var response = results.places[0];
+//         if (response.url) {
+//             console.log('loaded' + response.url);
+//         } else {
+//             console.log('error - no response url');
+//         };
+//         var yelpContent = '<span>Yelp Rating: ' + response.rating + '</span';
+//     })
+// }
+
