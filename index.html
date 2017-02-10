@@ -11,6 +11,7 @@
         .container {
             height: 100%;
             position: relative;
+            overflow: hidden;
         }
         html, body {
             height: 100%;
@@ -18,38 +19,151 @@
             padding: 0;
             font-family: Arial, sans-serif;
         }
-
         .results {
             list-style-type: none;
-            padding: 0;
+        }
+        #place-list {
+            margin-top: 1em;
+        }
+        #filters {
+            margin-bottom: 1em;
         }
 
-        #infobox {
-            float: left;
-            padding: 1%;
+        /* ** smaller screens ** */
+/*        .inner-text {
+            text-align: center;
+            padding: 2%;
         }
+        #infobox {
+            width: 100%;
+            height: 100%;
+        }
+        .reveal {
+            -webkit-transform: translate(275px, 0);
+            -moz-transform: translate(275px, 0);
+            -ms-transform: translate(275px, 0);
+            transform: translate(275px, 0);
+            -webkit-transform: translate3d(275px, 0, 0);
+            -moz-transform: translate3d(275px, 0, 0);
+            -ms-transform: translate3d(275px, 0, 0);
+            transform: translate3d(275px, 0, 0);
+        }
+        @media (min-width: 480px) {
+            .results {
+                width: 275px;
+                height: 100%;
+                position: fixed;
+            }
+            .inner-text {
+                text-align: left;
+            }
+            #infobox {
+                width: 275px;
+                float: left;
+                padding: 1%;
+            }
+        }*/
+/* off-screen menu area code provided by austin wolf at sitepoint:
+https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
+        #infobox {
+            list-style: none;
+            background: #311D1D;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 0;
+        }
+        #filters, #place-list {
+            width: 300px;
+            border-top: 1px solid #311D1D;
+            padding: 1em;
+        }
+        .inner-text {
+            display: block;
+            padding: 0.5em;
+            background: #311D1D;
+            color: #E5E3E3;
+            font-size: 1.2em;
+            text-decoration: none;
+            transition: color 0.2s, background 0.5s;
+        }
+/*        .inner-text :hover {
+            color: #c74438;
+            background: linear-gradient(135deg, rgba(0,0,0,0) 0%,rgba(75,20,20,0.65) 100%);
+        }*/
+        .container {
+            min-width: 100%;
+            min-height: 100%;
+            background-color: #655656;
+            position: relative;
+            top: 0;
+            bottom: 100%;
+            left: 0;
+            z-index: 1;
+            padding: 0 0 0 4em;
+        }
+        .nav-trigger {
+            position: absolute;
+            clip: rect(0, 0, 0, 0);
+        }
+        label[for="nav-trigger"] {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 2;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' x='0px' y='0px' width='30px' height='30px' viewBox='0 0 30 30' enable-background='new 0 0 30 30' xml:space='preserve'><rect width='30' height='6'/><rect y='24' width='30' height='6'/><rect y='12' width='30' height='6'/></svg>");
+            background-size: contain;
+        }
+
+        .nav-trigger:checked + label {
+            left: 315px;
+        }
+
+        .nav-trigger:checked ~ .container {
+            left: 300px;
+            box-shadow: 0 0 5px 5px rgba(0,0,0,0.5);
+        }
+        .nav-trigger + label, .site-wrap {
+            transition: left 0.2s;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        *,*:before,*:after{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;margin:0;padding:0;}
+
+        html, body { height: 100%; width: 100%; font-family: Helvetica, Arial, sans-serif; }
+
         </style>
     </head>
     <body>
-        <div class="container">
-            <div id="infobox">
-                <div id="filters">
-                    <h3>Filter Coffee Shops</h3>
-                    <p>Filter Results: <input data-bind="textInput: queryText" /></p>
-                </div>
-                <div id="place-list">
-                    <ul class="results" data-bind="foreach: filteredList">
-                        <li class="result-item">
-                            <h3 data-bind="text: name, click: $parent.selectPlace" class="name"></h3>
-                            <div data-bind="if: $parent.displayDetails">
-<!--                                 <p data-bind="text: id" class ="address"></p>
- --><!--                                 <p data-bind="text: opennow"></p>
- -->                            <!-- <p data-bind="text: reviews" class="reviews"></p> -->
-                            </div>
-                        </li>
-                    </ul>
-                </div>
+        <div id="infobox">
+            <div id="filters">
+                <h4 class="inner-text">Filter Coffee Shops</h4>
+                <p class="inner-text">Filter Results by Name: <input class="inner-text" data-bind="textInput: queryText" /></p>
             </div>
+            <hr />
+            <div id="place-list">
+                <ul class="results" data-bind="foreach: filteredList">
+                    <li class="result-item">
+                        <h4><a href="#" data-bind="text: name, click: $parent.selectPlace" class="inner-text name"></a></h4>
+                        <div data-bind="visible: $parent.showDetails"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger"></label>
+
+        <div class="container">
             <div id="map"></div>
         </div>
     </body>
@@ -59,6 +173,5 @@
         <script src="js/lib/oauth-signature.min.js"></script>
         <script src="js/app.js"></script>
         <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=initMap"></script>
-
     </footer>
 </html>
