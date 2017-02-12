@@ -5,38 +5,77 @@
         <meta name="viewport" content="initial-scale=1.0">
         <meta charset="utf-8">
         <style>
-        #map {
-            height: 100%;
-        }
-        .container {
-            height: 100%;
-            position: fixed;
-            overflow: hidden;
-        }
-        html, body {
-            height: 100%;
-            width: 100%;
-            margin: 0;
-            padding: 0;
-            font-family: Helvetica, Arial, sans-serif;
-        }
-        body {
-            position: fixed;
-        }
-        .results {
-            list-style-type: none;
-        }
-        #place-list {
-            margin-top: 1em;
-        }
-        #filters {
-            margin-bottom: 1em;
-        }
+            #map {
+                height: 100%;
+            }
+            .container {
+                height: 100%;
+                position: fixed;
+                overflow: hidden;
+            }
+            html, body {
+                height: 100%;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                font-family: Helvetica, Arial, sans-serif;
+            }
+            body {
+                position: fixed;
+            }
+            .results {
+                list-style-type: none;
+            }
+            #place-list {
+                margin-top: 1em;
+            }
+            #filters {
+                margin-bottom: 1em;
+            }
+            .iw-text {
+                padding: .2em;
+            }
+            #iw-name {
+                background-color: #311D1D;
+                color: #E5E3E3;
+                border-radius: 6px 6px 0 0;
+            }
+            #iw-website {
+                float: right;
+                text-decoration: none;
+                color: #E5E3E3;
+                background-color: #311D1D;
+                border-radius: 5px;
+            }
+            #iw-phone-number {
+                float: left;
+                text-decoration: none;
+                color: black;
+            }
+            .iw-rating {
+                text-align: center;
+                padding: .3em;
+                margin-top: 1em;
+                border-radius: 10px;
+                color: #FFF;
+            }
+            #yelp-rating {
+                float: right;
+                background-color: #C74438;
+            }
+            #google-rating {
+                float: left;
+                background-color: #E0AB12;
+            }
+            span.rating-num {
+                font-size: 2em;
+                padding: .1em;
+                color: #311D1D;
+                font-family: monospace;
+            }
 
-/* off-screen menu area code provided by austin wolf at sitepoint:
-https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
-
-/* all sizes....*/
+    /* off-screen menu area code provided by austin wolf at sitepoint:
+    https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
             #infobox {
                 list-style: none;
                 background: #311D1D;
@@ -67,7 +106,7 @@ https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
                 background-color: #311D1D;
             }
             .container {
-                /*min-width: 100%;*/
+                min-width: 100%;
                 min-height: 100%;
                 background-color: #655656;
                 position: relative;
@@ -84,7 +123,7 @@ https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
             label[for="nav-trigger"] {
                 position: fixed;
                 top: 15px;
-                left: 15px;
+                left: 20px;
                 z-index: 2;
                 width: 20px;
                 height: 20px;
@@ -93,7 +132,7 @@ https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
                 background-size: contain;
             }
             .nav-trigger:checked + label {
-                left: 91%;
+                left: 92%;
             }
             .nav-trigger:checked ~ .container {
                 left: 88%;
@@ -108,89 +147,43 @@ https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
             *,*:before,*:after{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;margin:0;padding:0;}
 
 
-        @media (min-width: 540px) and (max-width: 750px) {
-            .container {
-                padding-left: 6em;
+            @media (min-width: 540px) and (max-width: 750px) {
+                .nav-trigger:checked + label {
+                    left: 94%;
+                }
+                .nav-trigger:checked ~ .container {
+                    left: 92%;
+                }
+                label[for="nav-trigger"] {
+                    height: 25px;
+                    width: 25px;
+                }
             }
-            label[for="nav-trigger"] {
-                left: 35px;
-                height: 30px;
-                width: 30px;
-            }
-        }
 
-/* styles for larger screens !!!KEEP!!!! */
-        @media (min-width: 751px) {
-            #infobox {
-                list-style: none;
-                background: #311D1D;
-                width: 100%;
-                height: 100%;
-                position: fixed;
-                top: 0;
-                right: 0;
-                bottom: 0;
-                left: 0;
-                z-index: 0;
+    /* styles for larger screens !!!KEEP!!!! */
+            @media (min-width: 751px) {
+                #filters, #place-list {
+                    width: 300px;
+                }
+                .container {
+                    padding: 0 0 0 4em;
+                }
+                .nav-trigger {
+                    position: absolute;
+                }
+                label[for="nav-trigger"] {
+                    top: 15px;
+                    left: 15px;
+                    height: 30px;
+                    width: 30px;
+                }
+                .nav-trigger:checked + label {
+                    left: 315px;
+                }
+                .nav-trigger:checked ~ .container {
+                    left: 300px;
+                }
             }
-            #filters, #place-list {
-                width: 300px;
-            }
-            .container {
-                min-width: 100%;
-                min-height: 100%;
-                position: relative;
-                top: 0;
-                bottom: 100%;
-                left: 0;
-                z-index: 1;
-                padding: 0 0 0 4em;
-            }
-            .nav-trigger {
-                position: absolute;
-            }
-            label[for="nav-trigger"] {
-                position: fixed;
-                top: 15px;
-                left: 15px;
-                height: 30px;
-                width: 30px;
-            }
-            .nav-trigger:checked + label {
-                left: 315px;
-            }
-            .nav-trigger:checked ~ .container {
-                left: 300px;
-            }
-        }
-/*/*
-        /* screens under 400 */
-/*        @media (max-width: 500px) {
-            #infobox, #filters, #place-list, .results {
-                width: 80% !important;
-            }
-            .nav-trigger:checked ~ .container {
-                left: 80% !important;
-                box-shadow: 0 0 5px 5px rgba(0,0,0,0.5);
-            }
-            .nav-trigger:checked + label {
-                left: 47% !important;
-            }*/
-        /*/
-
-/*        @media (min-width: 501px) {
-            #infobox, #filters, #place-list, .results {
-                width: 30%;
-            }
-            .nav-trigger:checked ~ .container {
-                left: 80%;
-                box-shadow: 0 0 5px 5px rgba(0,0,0,0.5);
-            }
-            .nav-trigger:checked + label {
-                left: 47%;
-            }
-        }*/
-
         </style>
     </head>
     <body>
@@ -204,14 +197,16 @@ https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
                 <ul class="results" data-bind="foreach: filteredList">
                     <li class="result-item">
                         <h4><a href="#" data-bind="text: name, click: $parent.selectPlace" class="inner-text name"></a></h4>
-                        <div data-bind="visible: $parent.showDetails"></div>
+                        <div data-bind="visible: $parent.showDetails">
+                            <p data-bind="text: address"></p>
+                            <p data-bind="text: phone"></p>
+                        </div>
                     </li>
                 </ul>
             </div>
         </div>
         <input type="checkbox" id="nav-trigger" class="nav-trigger" />
         <label for="nav-trigger"></label>
-
         <div id="main" class="container">
             <div id="map"></div>
         </div>
@@ -222,12 +217,5 @@ https://www.sitepoint.com/pure-css-off-screen-navigation-menu/*/
         <script src="js/lib/oauth-signature.min.js"></script>
         <script src="js/app.js"></script>
         <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=initMap"></script>
-        <script>
-        // var fixed = document.getElementById('main');
-
-        // fixed.addEventListener('touchmove', function(e) {
-        //     e.preventDefault();
-        // }, false);
-        </script>
     </footer>
 </html>

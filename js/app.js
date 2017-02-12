@@ -10,6 +10,7 @@ var Place = function(data, yData, selectPlace, highlight){
     this.phone = ko.observable(data.formatted_phone_number);
     this.rating = ko.observable(data.rating);
     this.geometry = ko.observable(data.geometry.location);
+    this.googleUrl = ko.observable(data.url);
     this.marker = new google.maps.Marker({
         name: this.name(),
         map: map,
@@ -18,20 +19,17 @@ var Place = function(data, yData, selectPlace, highlight){
         animation: google.maps.Animation.DROP,
         visible: true
     }, this);
-    this.yelpRating = ko.observable(yData);
+    this.yelpRating = ko.observable(yData.businesses[0].rating);
+    this.yelpUrl = ko.observable(yData.businesses[0].url);
 
     this.marker.addListener('click', function() {
         selectPlace(self);
     });
     this.marker.addListener('mouseover', function() {
-        highlight(self, visitedMarker);
+        highlight(self, highlightedMarker);
     });
 };
 
-
-
-
-//locations model data should be passed
 var PlaceListViewModel = function(placesArr) {
     console.log("view model");
     var self = this;
@@ -41,25 +39,32 @@ var PlaceListViewModel = function(placesArr) {
     self.showDetails = ko.observable(false);
     self.selectPlace = function(place) {
         if (selectedPlace) {
-            selectedPlace = null;
+            self.highlight(selectedPlace, defaultMarker);
         }
+
+        if (place) {
+            console.log(place.name());
+            self.showDetails(true);
+            self.highlight(place, highlightedMarker);
+            self.populateInfoWindow(place);
+        }
+
         selectedPlace = place;
-        console.log(selectedPlace.name());
-        self.showDetails = ko.observable(true);
-        place.marker.setIcon(visitedMarker);
-        self.highlight(place, highlightedMarker);
-        self.populateInfoWindow(place);
+
     };
 
     self.populateInfoWindow = function(place) {
-        var placename = '<h4>' + place.name() + '</h4>';
-        var placeaddress = '<p>' + place.address() + '</p>';
-        var placewebsite = '<a class="website" href="' + place.website() + '">Visit Website</a>';
-        var placephone = '<p class="phone-number">  ' + place.phone() + ' </p>';
-        var placerating = '<p>Avg. Google Rating: ' + place.rating() + '</p>';
-        var yelpData = '<p>Avg. Yelp Rating: ' + place.yelpRating() + '<p>';
-        infowindow.setContent(placename + placeaddress + placewebsite + placephone + placerating + yelpData);
-
+        var placename = '<h4 id="iw-name" class="iw-text" >' + place.name() + '</h4>';
+        var placeaddress = '<p class="iw-text">' + place.address() + '</p>';
+        var placephone = '<a id="iw-phone-number" class="iw-text" href="tel:"' + place.phone() + '">  ' + place.phone() + ' </a>';
+        var placewebsite = '<a id="iw-website" class="iw-text" href="' + place.website() + '">website</a>';
+        var googlerating = '<a class="ratingbox" href="' + place.googleUrl() + '"><div id="google-rating"class="iw-rating"><span class="rating-label">Google Rating:</span> <br/><span class="rating-num">' + place.rating() + '</span></div></a>';
+        var yelprating = '<a class="ratingbox" href="' + place.yelpUrl() + '"><div id="yelp-rating" class="iw-rating"><span class="rating-label">Yelp Rating:</span> <br/><span class="rating-num">' + place.yelpRating() + '</span></div></a>';
+        infowindow.setContent(placename + placeaddress + '<p>' + placephone + placewebsite + '</p>' + googlerating + yelprating);
+        // deselect place on close click
+        infowindow.addListener('closeclick', function() {
+            self.selectPlace(null);
+        });
         infowindow.open(map, place.marker);
     };
 
@@ -67,10 +72,11 @@ var PlaceListViewModel = function(placesArr) {
         ko.utils.arrayForEach(self.filteredList(), function(place) {
             place.marker.setIcon(defaultMarker);
         })
-        place.marker.setIcon(marker);
+            place.marker.setIcon(marker);
     };
 
     self.places = ko.observableArray([]);
+
 
         //********* Yelp API **********//
     self.getYelpData = function(placeLoc, callback) {
@@ -106,8 +112,7 @@ var PlaceListViewModel = function(placesArr) {
             cache: true,
             dataType: 'jsonp',
             success: function(results) {
-                    var rating = results.businesses[0].rating;
-                    callback(rating);
+                    callback(results);
             },
             error: function() {
                 alert("Yelp API failed to load. Sorry about that! Please try again later.");
@@ -167,8 +172,6 @@ var PlaceListViewModel = function(placesArr) {
     }, PlaceListViewModel);
 };
 
-
-
 //********* Google Maps API **********//
 
 var map,
@@ -176,7 +179,8 @@ var map,
     infowindow,
     defaultMarker,
     highlightedMarker,
-    visitedMarker;
+    visitedMarker,
+    vm;
 
 function initMap() {
     console.log("init map");
@@ -187,11 +191,13 @@ function initMap() {
         zoom: 15
     });
 
-    defaultMarker = makeMarkerIcon('790000');
-    highlightedMarker = makeMarkerIcon('00793D');
-    visitedMarker = makeMarkerIcon('c74438');
+    defaultMarker = makeMarkerIcon('655656');
+    highlightedMarker = makeMarkerIcon('c74438');
+    visitedMarker = makeMarkerIcon('790000');
 
-    infowindow = new google.maps.InfoWindow();
+    infowindow = new google.maps.InfoWindow({
+        maxWidth: 200
+    });
 
     var request  = {
         location: ballard,
@@ -211,12 +217,19 @@ function initMap() {
         map.setCenter(center);
     });
 
+    google.maps.event.addListener(map, "click", function(event) {
+        if (infowindow) {
+            infowindow.close();
+            vm.selectPlace(null);
+        }
+    });
 }
 
 // findLocations function stores returned places in places array
 function findLocations(results, status){
     if (status == google.maps.places.PlacesServiceStatus.OK) {
-        ko.applyBindings(new PlaceListViewModel(results));
+        vm = new PlaceListViewModel(results);
+        ko.applyBindings(vm);
     }
     else {
         alert("Google Places Failed to Load. Try again later.");
@@ -243,4 +256,10 @@ function toggleBounce() {
     } else {
         marker.setAnimation(google.maps.Animation.BOUNCE);
     }
+}
+
+// Deal with small screens
+
+if (window.innerWidth < 750) {
+
 }
