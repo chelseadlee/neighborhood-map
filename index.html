@@ -101,6 +101,20 @@
                 text-decoration: none;
                 transition: color 0.2s, background 0.5s;
             }
+            .sidepanel-details {
+                margin-left: 0.5em;
+                margin-right: 0.5em;
+                color: #C74438;
+            }
+            .place-details-box {
+                border: 1px solid #C74438;
+                margin: 1em 0.5em;
+                padding: 0.3em 0.1em;
+            }
+            .sidepanel-details a{
+                text-decoration: none;
+                color: #E0AB12;
+            }
             a.name:hover {
                 color: #c74438;
                 background-color: #311D1D;
@@ -197,9 +211,13 @@
                 <ul class="results" data-bind="foreach: filteredList">
                     <li class="result-item">
                         <h4><a href="#" data-bind="text: name, click: $parent.selectPlace" class="inner-text name"></a></h4>
-                        <div data-bind="visible: $parent.showDetails">
-                            <p data-bind="text: address"></p>
-                            <p data-bind="text: phone"></p>
+                        <div data-bind="visible: $parent.showDetails() == name" class="place-details-box">
+                            <p data-bind="text: address" class="sidepanel-details"></p>
+                            <a data-bind="attr: {href: website}" class="sidepanel-details">website</a>
+                            <p data-bind="text: phone" class="sidepanel-details"></p>
+                            <p class="sidepanel-details"><a data-bind="attr: {href: googleUrl}">Google Rating: <span data-bind="text: rating" class="sidepanel-details"></span></a></p>
+                            <p class="sidepanel-details"><a data-bind="attr: {href: yelpUrl}">Yelp Rating: <span data-bind="text: yelpRating" class="sidepanel-details"></span></a></p>
+
                         </div>
                     </li>
                 </ul>

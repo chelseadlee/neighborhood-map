@@ -21,7 +21,9 @@ var Place = function(data, yData, selectPlace, highlight){
     }, this);
     this.yelpRating = ko.observable(yData.businesses[0].rating);
     this.yelpUrl = ko.observable(yData.businesses[0].url);
-
+    // this.linkedYelpRating = ko.computed( function() {
+    //     return '<a href="'+  + Yelp Rating: '' + self.yelpRating();
+    // })
     this.marker.addListener('click', function() {
         selectPlace(self);
     });
@@ -36,7 +38,7 @@ var PlaceListViewModel = function(placesArr) {
 
     var selectedPlace;
 
-    self.showDetails = ko.observable(false);
+    self.showDetails = ko.observable('');
     self.selectPlace = function(place) {
         if (selectedPlace) {
             self.highlight(selectedPlace, defaultMarker);
@@ -44,7 +46,7 @@ var PlaceListViewModel = function(placesArr) {
 
         if (place) {
             console.log(place.name());
-            self.showDetails(true);
+            self.showDetails(place.name);
             self.highlight(place, highlightedMarker);
             self.populateInfoWindow(place);
         }
@@ -86,7 +88,7 @@ var PlaceListViewModel = function(placesArr) {
         }
         var testlocation = '47.687802,-122.355656';
         var name = placeLoc.name;
-        var yelp_url = 'http://api.yelp.com/v2/search?';
+        var yelp_url = 'https://api.yelp.com/v2/search?';
         var httpMethod = 'GET',
             parameters = {
                 oauth_consumer_key: '62Dis_EM2VpJWMj5HJmN2g',
@@ -112,10 +114,10 @@ var PlaceListViewModel = function(placesArr) {
             cache: true,
             dataType: 'jsonp',
             success: function(results) {
-                    callback(results);
+                callback(results);
             },
             error: function() {
-                alert("Yelp API failed to load. Sorry about that! Please try again later.");
+                errorMsg("Yelp");
             }
         }
 
@@ -258,8 +260,7 @@ function toggleBounce() {
     }
 }
 
-// Deal with small screens
-
-if (window.innerWidth < 750) {
-
+function errorMsg(problem) {
+    console.log("error loading " + problem);
 }
+
