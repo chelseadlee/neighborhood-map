@@ -1,5 +1,7 @@
 'use strict';
 
+
+
 var Place = function(data, yData, selectPlace, highlight){
     var self = this;
     //create observable properties from return location
@@ -157,7 +159,6 @@ var PlaceListViewModel = function(placesArr) {
     self.filteredList = ko.computed( function() {
         var filter = self.queryText().toLowerCase();
         if (!filter) {
-            console.log("No filter!");
             return self.places();
         } else {
             var filtered = ko.utils.arrayFilter(self.places(), function(place) {
@@ -190,7 +191,12 @@ function initMap() {
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: ballard,
-        zoom: 15
+        zoom: 15,
+        mapTypeControl: true,
+        mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.RIGHT_TOP
+        }
     });
 
     defaultMarker = makeMarkerIcon('655656');
