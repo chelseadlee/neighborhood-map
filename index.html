@@ -26,17 +26,12 @@
                 overflow-x: hidden;
             }
 
+            /* Open and Close panel position styling */
             .openSidePanel{
                 width: 275px !important;
             }
             .closeSidePanel{
                 width: 0;
-            }
-            #main {
-                transition: margin-left .5s;
-                width: 100%;
-                z-index: 2;
-                margin-left: 0;
             }
             .closeMain {
                 margin-left: 0;
@@ -49,9 +44,23 @@
                 #sidePanel {padding-top: 15px;}
                 #sidePanel {font-size: 18px;}
             }
+
+            /* scroll bar */
+            ::-webkit-scrollbar {
+                width: 10px;
+            }
+            ::-webkit-scrollbar-track {
+                background-color: #311D1D;
+            }
+            ::-webkit-scrollbar-thumb {
+                background-color: #c74438;
+            }
+            body {
+                scrollbar-face-color: #c74438; /* ie */
+            }
+
             #filters, #place-list {
                 width: 90%;
-                border-top: 1px solid #311D1D;
                 margin: 0 0.6em;
             }
             .results {
@@ -60,6 +69,7 @@
                 padding: 0;
             }
             #place-list {
+                border-top: 1px solid #655656;
                 margin-top: 1em;
             }
             #filters {
@@ -75,6 +85,7 @@
                 width: 80%;
                 margin: 1em 0;
                 background-color: #E5E3E3;
+                border-radius: 5px;
             }
             input[type="text"] {
                 color: #311D1D;
@@ -82,33 +93,43 @@
             .sidepanel-details {
                 margin-left: 0.2em;
                 margin-right: 0.2em;
-                color: #E0AB12;
+                color: #988E8E;
             }
             .place-details-box {
-                border: 1px solid #C74438;
+                border: 1px solid #988E8E;
                 margin: .4em;
             }
             .sidepanel-details a{
                 text-decoration: none;
-                color: #E0AB12;
+                color: #988E8E;
+            }
+            .sidepanel-details a:hover {
+                color: #c74438;
             }
             a.name:hover {
                 color: #c74438;
-                background-color: #311D1D;
+            }
+            #main {
+                transition: margin-left .5s;
+                width: 100%;
+                z-index: 2;
+/*                margin-left: 0;*/
             }
             .container {
                 height: 100%;
                 position: fixed;
                 overflow: hidden;
+                padding-left: 50px;
+                background-color: #655656;
             }
             #toggle-nav-button {
                 display: inline-block;
                 position: absolute;
                 top: 15px;
-                left: 20px;
+                left: 15px;
                 z-index: 2;
-                width: 28px;
-                height: 28px;
+                width: 20px;
+                height: 20px;
                 cursor: pointer;
                 background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' x='0px' y='0px' width='30px' height='30px' viewBox='0 0 30 30' enable-background='new 0 0 30 30' xml:space='preserve'><rect width='30' height='6'/><rect y='24' width='30' height='6'/><rect y='12' width='30' height='6'/></svg>");
                 background-size: contain;
@@ -117,6 +138,7 @@
                 height: 100%;
                 width: 100%;
             }
+            /* Google Maps info window */
             .iw-text {
                 padding: .2em;
             }
@@ -168,7 +190,6 @@
                 <h2 class="inner-text">Coffee Finder</h2>
                 <p class="inner-text">Filter Coffee Shops by Name: <input data-bind="textInput: queryText" /></p>
             </div>
-            <hr />
             <div id="place-list">
                 <ul class="results" data-bind="foreach: filteredList">
                     <li class="result-item">
@@ -199,7 +220,7 @@
         <script src="js/lib/knockout.js"></script>
         <script src="js/lib/oauth-signature.min.js"></script>
         <script src="js/app.js"></script>
-        <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=initMap"></script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=initMap"</script>
         <script>
             $(document).ready(function() {
                 $("#toggle-nav-button").on("click", function() {

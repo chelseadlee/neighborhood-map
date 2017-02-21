@@ -1,10 +1,8 @@
 'use strict';
 
-
-
 var Place = function(data, yData, selectPlace, highlight){
     var self = this;
-    //create observable properties from return location
+    // create observable properties from return location
     this.id = data.place_id;
     this.name = ko.observable(data.name);
     this.address = ko.observable(data.formatted_address);
@@ -23,9 +21,6 @@ var Place = function(data, yData, selectPlace, highlight){
     }, this);
     this.yelpRating = ko.observable(yData.businesses[0].rating);
     this.yelpUrl = ko.observable(yData.businesses[0].url);
-    // this.linkedYelpRating = ko.computed( function() {
-    //     return '<a href="'+  + Yelp Rating: '' + self.yelpRating();
-    // })
     this.marker.addListener('click', function() {
         selectPlace(self);
     });
@@ -39,24 +34,30 @@ var PlaceListViewModel = function(placesArr) {
     var self = this;
 
     var selectedPlace;
-
+    // this ko observable controls visibility of place details display area
     self.showDetails = ko.observable('');
+    // select place by clicking on place in panel view or on map markers
     self.selectPlace = function(place) {
         if (selectedPlace) {
+            // if a place is already selected, unhighlight marker and remove details from panel
             self.highlight(selectedPlace, defaultMarker);
+            self.showDetails('');
         }
 
+        // if valid place is selected
         if (place) {
+            // when place is selected, show details in panel and infowindow, highlight marker
             console.log(place.name());
             self.showDetails(place.name);
             self.highlight(place, highlightedMarker);
             self.populateInfoWindow(place);
         }
 
+        // set selected place
         selectedPlace = place;
-
     };
 
+    // set info window details
     self.populateInfoWindow = function(place) {
         var placename = '<h4 id="iw-name" class="iw-text" >' + place.name() + '</h4>';
         var placeaddress = '<p class="iw-text">' + place.address() + '</p>';
@@ -72,6 +73,7 @@ var PlaceListViewModel = function(placesArr) {
         infowindow.open(map, place.marker);
     };
 
+    // change marker color (highlights or unhighlights by changing marker icon)
     self.highlight = function(place, marker) {
         ko.utils.arrayForEach(self.filteredList(), function(place) {
             place.marker.setIcon(defaultMarker);
@@ -79,16 +81,16 @@ var PlaceListViewModel = function(placesArr) {
             place.marker.setIcon(marker);
     };
 
+    // set empty observable array for places
     self.places = ko.observableArray([]);
 
 
-        //********* Yelp API **********//
+    //********* load Yelp API **********//
     self.getYelpData = function(placeLoc, callback) {
         // Read API keys
         function nonce_generate() {
             return (Math.floor(Math.random() * 1e12).toString());
         }
-        var testlocation = '47.687802,-122.355656';
         var name = placeLoc.name;
         var yelp_url = 'https://api.yelp.com/v2/search?';
         var httpMethod = 'GET',
@@ -126,11 +128,13 @@ var PlaceListViewModel = function(placesArr) {
         $.ajax(settings);
     };
 
-    // get google place details
+    // get google place details by looping through nearby places
     placesArr.slice(0, 3).forEach(function(nearbyPlace) {
         var otherCallbackReturned = false;
         var googlePlaceDetails = null;
         var yData = null;
+
+        // get details from Google Maps Place Details
         service.getDetails({
             placeId: nearbyPlace.place_id,
             geometry: nearbyPlace.geometry.location
@@ -139,6 +143,8 @@ var PlaceListViewModel = function(placesArr) {
                 if(otherCallbackReturned){
                     self.places.push(new Place(placeDetails, yData, self.selectPlace, self.highlight));
                 }
+            } else {
+                errorMsg("Google Places");
             }
             otherCallbackReturned = true;
             googlePlaceDetails = placeDetails;
@@ -175,8 +181,6 @@ var PlaceListViewModel = function(placesArr) {
     }, PlaceListViewModel);
 };
 
-//********* Google Maps API **********//
-
 var map,
     service,
     infowindow,
@@ -185,8 +189,11 @@ var map,
     visitedMarker,
     vm;
 
+//********* Google Maps API **********//
+
 function initMap() {
     console.log("init map");
+    // set map center to Ballard, Seattle
     var ballard = new google.maps.LatLng(47.6686195,-122.3828064);
 
     map = new google.maps.Map(document.getElementById('map'), {
@@ -194,14 +201,19 @@ function initMap() {
         zoom: 15,
         mapTypeControl: true,
         mapTypeControlOptions: {
+            // move map control style to right top
             style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.RIGHT_TOP
+            position: google.maps.ControlPosition.TOP_CENTER
+        },
+        zoomControl: true,
+        zoomControlOptions: {
+            position: google.maps.ControlPosition.BOTTOM_CENTER
         }
     });
 
+    // marker
     defaultMarker = makeMarkerIcon('655656');
     highlightedMarker = makeMarkerIcon('c74438');
-    visitedMarker = makeMarkerIcon('790000');
 
     infowindow = new google.maps.InfoWindow({
         maxWidth: 200
@@ -225,6 +237,8 @@ function initMap() {
         map.setCenter(center);
     });
 
+    // add listener to map so that clicking outside of infowindow will close it
+    // and deselect place
     google.maps.event.addListener(map, "click", function(event) {
         if (infowindow) {
             infowindow.close();
@@ -236,6 +250,7 @@ function initMap() {
 // findLocations function stores returned places in places array
 function findLocations(results, status){
     if (status == google.maps.places.PlacesServiceStatus.OK) {
+        // create view model, passing in results of nearby search service
         vm = new PlaceListViewModel(results);
         ko.applyBindings(vm);
     }
@@ -244,7 +259,7 @@ function findLocations(results, status){
     }
 }
 
-// Thanks to the folks from the Google Maps API course for this marker customizer
+// Thanks to the Google Maps API course for this marker customizer
 // Function takes in a color and then creates a new marker icon of that color.
 // Icon will be 21px wide by 34px high with an origin of 0,0 and anchored at 10,34.
 function makeMarkerIcon(markerColor) {
@@ -258,15 +273,10 @@ function makeMarkerIcon(markerColor) {
   return markerImage;
 }
 
-function toggleBounce() {
-    if (marker.getAnimation() !== null) {
-        marker.setAnimation(null);
-    } else {
-        marker.setAnimation(google.maps.Animation.BOUNCE);
-    }
-}
-
 function errorMsg(problem) {
     console.log("error loading " + problem);
 }
 
+// var googleError = function() {
+//     alert("Error loading Google Maps. Please try again later.")
+// }
