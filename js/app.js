@@ -112,7 +112,7 @@ var PlaceListViewModel = function(placesArr) {
             return (Math.floor(Math.random() * 1e12).toString());
         }
         var name = placeLoc.name;
-        var yelp_url = 'https://api.yelp.com/v2/seearch?';
+        var yelp_url = 'https://api.yelp.com/v2/search?';
         var httpMethod = 'GET',
             parameters = {
                 oauth_consumer_key: '62Dis_EM2VpJWMj5HJmN2g',
