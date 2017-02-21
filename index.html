@@ -91,31 +91,48 @@
                 color: #311D1D;
             }
             .sidepanel-details {
-                margin-left: 0.2em;
-                margin-right: 0.2em;
-                color: #988E8E;
+                margin: 6px 3px;
+                color: #E5E3E3;
             }
             .place-details-box {
-                border: 1px solid #988E8E;
-                margin: .4em;
+                border: 3px solid #655656;
+                margin: 2px;
+                padding: 3px;
             }
             .sidepanel-details a{
                 text-decoration: none;
-                color: #988E8E;
             }
             .sidepanel-details a:hover {
-                color: #c74438;
+                color: #C74438;
+                font-weight: 500;
             }
             a.name:hover {
                 color: #c74438;
+            }
+            .highlightedPlace {
+                color: #c74438 !important;
+            }
+            .rating-button:hover {
+                background-color: #E5E3E3;
+                color: #655656;
+            }
+            .rating-button {
+                background-color: #655656;
+                border: 1px solid #E5E3E3;
+                margin: 5px;
+                color: #E5E3E3;
+                padding: 5px;
+                text-decoration: none;
+            }
+            .error {
+                color: #C74438;
+                font-size: 0.7em;
+                padding: 2px;
             }
             #main {
                 transition: margin-left .5s;
                 width: 100%;
                 z-index: 2;
-/*                margin-left: 0;*/
-            }
-            .container {
                 height: 100%;
                 position: fixed;
                 overflow: hidden;
@@ -143,16 +160,30 @@
                 padding: .2em;
             }
             #iw-name {
+                font-size: 1.2em;
                 background-color: #311D1D;
-                color: #E5E3E3;
+                color: #FFF;
                 border-radius: 6px 6px 0 0;
+                margin-bottom: 0;
             }
             #iw-website {
-                float: right;
+                background-color: #655656;
+                margin-top: 0;
+                text-transform: uppercase;
+                line-height: .9em;
+                font-size: 1em;
+                text-align: right;
+            }
+            a.iw-website {
                 text-decoration: none;
                 color: #E5E3E3;
-                background-color: #311D1D;
-                border-radius: 5px;
+                margin-right: 10px;
+            }
+            a.iw-website:hover{
+                font-weight: 500;
+                color: #C74438;
+                color: #FFF;
+                font-size: 1.1em;
             }
             #iw-phone-number {
                 float: left;
@@ -160,24 +191,38 @@
                 color: black;
             }
             .iw-rating {
+                width: 85px;
                 text-align: center;
-                padding: .3em;
-                margin-top: 1em;
+                padding: 4px;
+                margin-top: 15px;
+                border-radius: 10px;
+                color: #311D1D;
+                background-color: #C74438;
+                border: 2px solid #655656;
+            }
+            .iw-error {
+                padding: 4px;
+                float: right;
+                width: 85px;
+                background-color: #C74438;
+                border: 2px solid #655656;
                 border-radius: 10px;
                 color: #FFF;
             }
+            .iw-error p{
+                padding: 2px;
+                margin: 0;
+            }
             #yelp-rating {
                 float: right;
-                background-color: #C74438;
             }
             #google-rating {
                 float: left;
-                background-color: #E0AB12;
             }
-            span.rating-num {
+            .rating-num {
                 font-size: 2em;
                 padding: .1em;
-                color: #311D1D;
+                color: #E5E3E3;
                 font-family: monospace;
             }
 
@@ -193,13 +238,18 @@
             <div id="place-list">
                 <ul class="results" data-bind="foreach: filteredList">
                     <li class="result-item">
-                        <h4><a href="#" data-bind="text: name, click: $parent.selectPlace" class="inner-text name"></a></h4>
+                        <h4><a href="#" data-bind="text: name, click: $parent.selectPlace, css: { highlightedPlace : $parent.showDetails() == name }" class="inner-text name"></a></h4>
                         <div data-bind="visible: $parent.showDetails() == name" class="place-details-box">
                             <p data-bind="text: address" class="sidepanel-details"></p>
                             <a data-bind="attr: {href: website}" class="sidepanel-details">website</a>
                             <p data-bind="text: phone" class="sidepanel-details"></p>
-                            <p class="sidepanel-details"><a data-bind="attr: {href: googleUrl}">Google Rating: <span data-bind="text: rating" class="sidepanel-details"></span></a></p>
-                            <p class="sidepanel-details"><a data-bind="attr: {href: yelpUrl}">Yelp Rating: <span data-bind="text: yelpRating" class="sidepanel-details"></span></a></p>
+                            <div data-bind="html: linkedGoogleRating" id="panel-google" class="sidepanel-details panelRatingLink"></div>
+                            <!-- ko if: yelpRating() -->
+                            <p data-bind="html: linkedYelpRating" id="panel-yelp" class="sidepanel-details panelRatingLink"></p>
+                            <!-- /ko -->
+                            <!-- ko ifnot: yelpRating() -->
+                            <div data-bind="text: yelpError" class="sidepanel-details error panelRatingLink"></div>
+                            <!-- /ko -->
                         </div>
                     </li>
                 </ul>
@@ -220,7 +270,7 @@
         <script src="js/lib/knockout.js"></script>
         <script src="js/lib/oauth-signature.min.js"></script>
         <script src="js/app.js"></script>
-        <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=initMap"</script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=googleSuccess" onerror="googleError()"></script>
         <script>
             $(document).ready(function() {
                 $("#toggle-nav-button").on("click", function() {

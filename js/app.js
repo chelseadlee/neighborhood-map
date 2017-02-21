@@ -11,6 +11,9 @@ var Place = function(data, yData, selectPlace, highlight){
     this.rating = ko.observable(data.rating);
     this.geometry = ko.observable(data.geometry.location);
     this.googleUrl = ko.observable(data.url);
+    this.linkedGoogleRating = ko.computed( function() {
+        return '<a class="rating-link" href="' + self.googleUrl() + '"><div class="rating-button">Google Rating: ' + self.rating() + '</div></a>';
+    });
     this.marker = new google.maps.Marker({
         name: this.name(),
         map: map,
@@ -19,8 +22,17 @@ var Place = function(data, yData, selectPlace, highlight){
         animation: google.maps.Animation.DROP,
         visible: true
     }, this);
-    this.yelpRating = ko.observable(yData.businesses[0].rating);
-    this.yelpUrl = ko.observable(yData.businesses[0].url);
+    if (!yData) {
+        this.yelpRating = ko.observable(yData);
+        this.yelpUrl = ko.observable('');
+        this.yelpError = ko.observable('Error! Yelp failed to load. \n Please try again later.');
+    } else {
+        this.yelpRating = ko.observable(yData.businesses[0].rating);
+        this.yelpUrl = ko.observable(yData.businesses[0].url);
+        this.linkedYelpRating = ko.computed( function() {
+            return '<a class="rating-link" href="' + self.yelpUrl() + '"><div class="rating-button">Yelp Rating: ' + self.yelpRating() + '</div></a>';
+        });
+    }
     this.marker.addListener('click', function() {
         selectPlace(self);
     });
@@ -33,6 +45,7 @@ var PlaceListViewModel = function(placesArr) {
     console.log("view model");
     var self = this;
 
+
     var selectedPlace;
     // this ko observable controls visibility of place details display area
     self.showDetails = ko.observable('');
@@ -44,7 +57,6 @@ var PlaceListViewModel = function(placesArr) {
             self.showDetails('');
         }
 
-        // if valid place is selected
         if (place) {
             // when place is selected, show details in panel and infowindow, highlight marker
             console.log(place.name());
@@ -57,15 +69,23 @@ var PlaceListViewModel = function(placesArr) {
         selectedPlace = place;
     };
 
+
     // set info window details
     self.populateInfoWindow = function(place) {
         var placename = '<h4 id="iw-name" class="iw-text" >' + place.name() + '</h4>';
+        var placewebsite = '<p id="iw-website" class="iw-text"><a class="iw-website" href="' + place.website() + '">website</a></p>';
         var placeaddress = '<p class="iw-text">' + place.address() + '</p>';
-        var placephone = '<a id="iw-phone-number" class="iw-text" href="tel:"' + place.phone() + '">  ' + place.phone() + ' </a>';
-        var placewebsite = '<a id="iw-website" class="iw-text" href="' + place.website() + '">website</a>';
-        var googlerating = '<a class="ratingbox" href="' + place.googleUrl() + '"><div id="google-rating"class="iw-rating"><span class="rating-label">Google Rating:</span> <br/><span class="rating-num">' + place.rating() + '</span></div></a>';
-        var yelprating = '<a class="ratingbox" href="' + place.yelpUrl() + '"><div id="yelp-rating" class="iw-rating"><span class="rating-label">Yelp Rating:</span> <br/><span class="rating-num">' + place.yelpRating() + '</span></div></a>';
-        infowindow.setContent(placename + placeaddress + '<p>' + placephone + placewebsite + '</p>' + googlerating + yelprating);
+        var placephone = '<p>' + place.phone() + '</p>';
+        var googlerating = '<a href="' + place.googleUrl() + '"><div id="google-rating"class="iw-rating"><span class="rating-label"><b>Google</b> Rating:</span> <br/><span class="rating-num">' + place.rating() + '</span></div></a>';
+        var yelprating = '<a href="' + place.yelpUrl() + '"><div id="yelp-rating" class="iw-rating"><span class="rating-label"><b>Yelp</b> Rating:</span> <br/><span class="rating-num">' + place.yelpRating() + '</span></div></a>';
+        // if yelp error, add error text
+        if (self.yelpError) {
+            var yelpError = '<a href="#"><div class="iw-error"><span>' + place.yelpError() + '</span></div></a>';
+            infowindow.setContent(placename + placewebsite + placeaddress + placephone + googlerating + '<br />' + yelpError);
+        }
+        else {
+            infowindow.setContent(placename + placewebsite + placeaddress + placephone + googlerating + yelprating);
+        }
         // deselect place on close click
         infowindow.addListener('closeclick', function() {
             self.selectPlace(null);
@@ -92,7 +112,7 @@ var PlaceListViewModel = function(placesArr) {
             return (Math.floor(Math.random() * 1e12).toString());
         }
         var name = placeLoc.name;
-        var yelp_url = 'https://api.yelp.com/v2/search?';
+        var yelp_url = 'https://api.yelp.com/v2/seearch?';
         var httpMethod = 'GET',
             parameters = {
                 oauth_consumer_key: '62Dis_EM2VpJWMj5HJmN2g',
@@ -121,13 +141,14 @@ var PlaceListViewModel = function(placesArr) {
                 callback(results);
             },
             error: function() {
-                errorMsg("Yelp");
+                callback("error");
             }
         }
 
         $.ajax(settings);
     };
 
+    self.yelpError = false;
     // get google place details by looping through nearby places
     placesArr.slice(0, 3).forEach(function(nearbyPlace) {
         var otherCallbackReturned = false;
@@ -140,40 +161,64 @@ var PlaceListViewModel = function(placesArr) {
             geometry: nearbyPlace.geometry.location
         }, function (placeDetails, status) {
             if (status == google.maps.places.PlacesServiceStatus.OK) {
+                // if yelp api data is returned first
                 if(otherCallbackReturned){
-                    self.places.push(new Place(placeDetails, yData, self.selectPlace, self.highlight));
+                    // handle yelp error
+                    if (yData === "error") {
+                        self.yelpError = true;
+                        yData = null;
+                        self.places.push(new Place(placeDetails, yData, self.selectPlace, self.highlight));
+                    } else {
+                        self.places.push(new Place(placeDetails, yData, self.selectPlace, self.highlight));
+                    }
                 }
             } else {
+                // handle Google Places error
                 errorMsg("Google Places");
             }
+            // set otherCallbackReturned to true if this callback executes first
             otherCallbackReturned = true;
             googlePlaceDetails = placeDetails;
         });
 
+        // get yelp data if google data is returned first
+        // TODO: set up promises...
         self.getYelpData(nearbyPlace, function(results){
             if(otherCallbackReturned){
+                // handle yelp error
+                if (results === "error") {
+                    self.yelpError = true;
+                    results = null;
+                    self.places.push(new Place(googlePlaceDetails, results, self.selectPlace, self.highlight));
+                }
                 self.places.push(new Place(googlePlaceDetails, results, self.selectPlace, self.highlight));
             }
             yData = results;
+            // set otherCallbackReturned to true if this callback executes first
             otherCallbackReturned = true;
         });
     });
 
+
+    // Filter place list results by query text
     self.queryText = ko.observable("");
 
     // filter the marker locations using ko utility filter
     self.filteredList = ko.computed( function() {
         var filter = self.queryText().toLowerCase();
+        // if no filter is applied, return all places
         if (!filter) {
             return self.places();
         } else {
             var filtered = ko.utils.arrayFilter(self.places(), function(place) {
+                // reset all markers as invisible
                 place.marker.setVisible(false);
                 var string = place.name().toLowerCase();
-                console.log("hey " + string);
+                // return all places that match filter query by name
                 return (string.indexOf(filter) !== -1);
             });
             filtered.forEach( function(place) {
+                // for each place returned in filtered array, set marker to visible
                 place.marker.setVisible(true);
             });
             return filtered;
@@ -199,36 +244,22 @@ function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
         center: ballard,
         zoom: 15,
-        mapTypeControl: true,
-        mapTypeControlOptions: {
-            // move map control style to right top
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.TOP_CENTER
-        },
+        mapTypeControl: false,
         zoomControl: true,
         zoomControlOptions: {
-            position: google.maps.ControlPosition.BOTTOM_CENTER
+            // move map zoom control to bottom center
+            position: google.maps.ControlPosition.BOTTOM_LEFT
         }
     });
 
-    // marker
+    // marker styles
     defaultMarker = makeMarkerIcon('655656');
     highlightedMarker = makeMarkerIcon('c74438');
 
+    // create info window
     infowindow = new google.maps.InfoWindow({
         maxWidth: 200
     });
-
-    var request  = {
-        location: ballard,
-        radius: '500',
-        keyword: 'coffee'
-    };
-
-    service = new google.maps.places.PlacesService(map);
-    service.nearbySearch(request, findLocations);
-    //once locations array initialized in findLocations callback
-    //the view model can be initialized pass into the constructor function
 
     //Make Google Map responsive by centering map on window resize.
     google.maps.event.addDomListener(window, "resize", function() {
@@ -245,12 +276,23 @@ function initMap() {
             vm.selectPlace(null);
         }
     });
+
+    // callback for nearby search service
+    var request  = {
+        location: ballard,
+        radius: '500',
+        keyword: 'coffee'
+    };
+
+    service = new google.maps.places.PlacesService(map);
+    // places array initialized in findLocations callback
+    service.nearbySearch(request, findLocations);
 }
 
 // findLocations function stores returned places in places array
 function findLocations(results, status){
     if (status == google.maps.places.PlacesServiceStatus.OK) {
-        // create view model, passing in results of nearby search service
+        // create view model, passing in places array
         vm = new PlaceListViewModel(results);
         ko.applyBindings(vm);
     }
@@ -263,20 +305,36 @@ function findLocations(results, status){
 // Function takes in a color and then creates a new marker icon of that color.
 // Icon will be 21px wide by 34px high with an origin of 0,0 and anchored at 10,34.
 function makeMarkerIcon(markerColor) {
-  var markerImage = new google.maps.MarkerImage(
-      'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
-      '|40|_|%E2%80%A2',
-      new google.maps.Size(21, 34),
-      new google.maps.Point(0, 0),
-      new google.maps.Point(10, 34),
-      new google.maps.Size(21,34));
-  return markerImage;
+    var markerImage = new google.maps.MarkerImage(
+        'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+        '|40|_|%E2%80%A2',
+        new google.maps.Size(21, 34),
+        new google.maps.Point(0, 0),
+        new google.maps.Point(10, 34),
+        new google.maps.Size(21,34));
+    return markerImage;
 }
 
+// error handling
+
+// general error message
 function errorMsg(problem) {
     console.log("error loading " + problem);
+    alert('Error loading ' + problem + ". Please try again later!");
 }
 
-// var googleError = function() {
-//     alert("Error loading Google Maps. Please try again later.")
-// }
+// Google Maps async load callback
+function googleSuccess() {
+    if (typeof google !== 'undefined') {
+        initMap();
+    }
+    else {
+        console.log('google undefined');
+        googleError();
+    }
+}
+
+// google Error, for Google Maps async load fallback
+function googleError() {
+    errorMsg("Google Maps");
+}
