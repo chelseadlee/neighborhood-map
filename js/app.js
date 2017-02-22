@@ -25,7 +25,7 @@ var Place = function(data, yData, selectPlace, highlight){
     if (!yData) {
         this.yelpRating = ko.observable(yData);
         this.yelpUrl = ko.observable('');
-        this.yelpError = ko.observable('Error! Yelp failed to load. \n Please try again later.');
+        this.yelpError = ko.observable('Error! Yelp failed to load. Please try again later.');
     } else {
         this.yelpRating = ko.observable(yData.businesses[0].rating);
         this.yelpUrl = ko.observable(yData.businesses[0].url);
@@ -150,7 +150,7 @@ var PlaceListViewModel = function(placesArr) {
 
     self.yelpError = false;
     // get google place details by looping through nearby places
-    placesArr.slice(0, 3).forEach(function(nearbyPlace) {
+    placesArr.forEach(function(nearbyPlace) {
         var otherCallbackReturned = false;
         var googlePlaceDetails = null;
         var yData = null;
