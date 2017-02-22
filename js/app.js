@@ -1,6 +1,6 @@
 'use strict';
 
-var Place = function(data, yData, selectPlace, highlight){
+var Place = function (data, yData, selectPlace, highlight) {
     var self = this;
     // create observable properties from return location
     this.id = data.place_id;
@@ -11,7 +11,7 @@ var Place = function(data, yData, selectPlace, highlight){
     this.rating = ko.observable(data.rating);
     this.geometry = ko.observable(data.geometry.location);
     this.googleUrl = ko.observable(data.url);
-    this.linkedGoogleRating = ko.computed( function() {
+    this.linkedGoogleRating = ko.computed(function () {
         return '<a class="rating-link" href="' + self.googleUrl() + '"><div class="rating-button">Google Rating: ' + self.rating() + '</div></a>';
     });
     this.marker = new google.maps.Marker({
@@ -29,19 +29,19 @@ var Place = function(data, yData, selectPlace, highlight){
     } else {
         this.yelpRating = ko.observable(yData.businesses[0].rating);
         this.yelpUrl = ko.observable(yData.businesses[0].url);
-        this.linkedYelpRating = ko.computed( function() {
+        this.linkedYelpRating = ko.computed(function () {
             return '<a class="rating-link" href="' + self.yelpUrl() + '"><div class="rating-button">Yelp Rating: ' + self.yelpRating() + '</div></a>';
         });
     }
-    this.marker.addListener('click', function() {
+    this.marker.addListener('click', function () {
         selectPlace(self);
     });
-    this.marker.addListener('mouseover', function() {
+    this.marker.addListener('mouseover', function () {
         highlight(self, highlightedMarker);
     });
 };
 
-var PlaceListViewModel = function(placesArr) {
+var PlaceListViewModel = function (placesArr) {
     console.log("view model");
     var self = this;
 
@@ -50,7 +50,7 @@ var PlaceListViewModel = function(placesArr) {
     // this ko observable controls visibility of place details display area
     self.showDetails = ko.observable('');
     // select place by clicking on place in panel view or on map markers
-    self.selectPlace = function(place) {
+    self.selectPlace = function (place) {
         if (selectedPlace) {
             // if a place is already selected, unhighlight marker and remove details from panel
             self.highlight(selectedPlace, defaultMarker);
@@ -71,7 +71,7 @@ var PlaceListViewModel = function(placesArr) {
 
 
     // set info window details
-    self.populateInfoWindow = function(place) {
+    self.populateInfoWindow = function (place) {
         var placename = '<h4 id="iw-name" class="iw-text" >' + place.name() + '</h4>';
         var placewebsite = '<p id="iw-website" class="iw-text"><a class="iw-website" href="' + place.website() + '">website</a></p>';
         var placeaddress = '<p class="iw-text">' + place.address() + '</p>';
@@ -82,23 +82,22 @@ var PlaceListViewModel = function(placesArr) {
         if (self.yelpError) {
             var yelpError = '<a href="#"><div class="iw-error"><span>' + place.yelpError() + '</span></div></a>';
             infowindow.setContent(placename + placewebsite + placeaddress + placephone + googlerating + '<br />' + yelpError);
-        }
-        else {
+        } else {
             infowindow.setContent(placename + placewebsite + placeaddress + placephone + googlerating + yelprating);
         }
         // deselect place on close click
-        infowindow.addListener('closeclick', function() {
+        infowindow.addListener('closeclick', function () {
             self.selectPlace(null);
         });
         infowindow.open(map, place.marker);
     };
 
     // change marker color (highlights or unhighlights by changing marker icon)
-    self.highlight = function(place, marker) {
-        ko.utils.arrayForEach(self.filteredList(), function(place) {
+    self.highlight = function (place, marker) {
+        ko.utils.arrayForEach(self.filteredList(), function (place) {
             place.marker.setIcon(defaultMarker);
         })
-            place.marker.setIcon(marker);
+        place.marker.setIcon(marker);
     };
 
     // set empty observable array for places
@@ -106,7 +105,7 @@ var PlaceListViewModel = function(placesArr) {
 
 
     //********* load Yelp API **********//
-    self.getYelpData = function(placeLoc, callback) {
+    self.getYelpData = function (placeLoc, callback) {
         // Read API keys
         function nonce_generate() {
             return (Math.floor(Math.random() * 1e12).toString());
@@ -118,7 +117,7 @@ var PlaceListViewModel = function(placesArr) {
                 oauth_consumer_key: '62Dis_EM2VpJWMj5HJmN2g',
                 oauth_token: 'z26Io3gYEFHJTZHSJJdt6N2Mu6N6bLJ5',
                 oauth_nonce: nonce_generate(),
-                oauth_timestamp: Math.floor(Date.now()/1000),
+                oauth_timestamp: Math.floor(Date.now() / 1000),
                 oauth_signature_method: 'HMAC-SHA1',
                 oauth_version: '1.0',
                 callback: 'cb',
@@ -126,10 +125,12 @@ var PlaceListViewModel = function(placesArr) {
                 term: name
             },
             consumerSecret = 'gzFGe9GulzBxi2zyV5M0TN3dPIU',
-            tokenSecret =  'ypxDSqySN4bf7Avp8ANucYDyKL8';
-            // generates a RFC 3986 encoded, BASE64 encoded HMAC-SHA1
-        var encodedSignature = oauthSignature.generate(httpMethod, yelp_url, parameters, consumerSecret, tokenSecret, {encodeSignature: false});
-            parameters.oauth_signature = encodedSignature;
+            tokenSecret = 'ypxDSqySN4bf7Avp8ANucYDyKL8';
+        // generates a RFC 3986 encoded, BASE64 encoded HMAC-SHA1
+        var encodedSignature = oauthSignature.generate(httpMethod, yelp_url, parameters, consumerSecret, tokenSecret, {
+            encodeSignature: false
+        });
+        parameters.oauth_signature = encodedSignature;
 
         // Yelp settings
         var settings = {
@@ -137,10 +138,10 @@ var PlaceListViewModel = function(placesArr) {
             data: parameters,
             cache: true,
             dataType: 'jsonp',
-            success: function(results) {
+            success: function (results) {
                 callback(results);
             },
-            error: function() {
+            error: function () {
                 callback("error");
             }
         }
@@ -150,7 +151,7 @@ var PlaceListViewModel = function(placesArr) {
 
     self.yelpError = false;
     // get google place details by looping through nearby places
-    placesArr.forEach(function(nearbyPlace) {
+    placesArr.forEach(function (nearbyPlace) {
         var otherCallbackReturned = false;
         var googlePlaceDetails = null;
         var yData = null;
@@ -162,7 +163,7 @@ var PlaceListViewModel = function(placesArr) {
         }, function (placeDetails, status) {
             if (status == google.maps.places.PlacesServiceStatus.OK) {
                 // if yelp api data is returned first
-                if(otherCallbackReturned){
+                if (otherCallbackReturned) {
                     // handle yelp error
                     if (yData === "error") {
                         self.yelpError = true;
@@ -183,8 +184,8 @@ var PlaceListViewModel = function(placesArr) {
 
         // get yelp data if google data is returned first
         // TODO: set up promises...
-        self.getYelpData(nearbyPlace, function(results){
-            if(otherCallbackReturned){
+        self.getYelpData(nearbyPlace, function (results) {
+            if (otherCallbackReturned) {
                 // handle yelp error
                 if (results === "error") {
                     self.yelpError = true;
@@ -204,20 +205,20 @@ var PlaceListViewModel = function(placesArr) {
     self.queryText = ko.observable("");
 
     // filter the marker locations using ko utility filter
-    self.filteredList = ko.computed( function() {
+    self.filteredList = ko.computed(function () {
         var filter = self.queryText().toLowerCase();
         // if no filter is applied, return all places
         if (!filter) {
             return self.places();
         } else {
-            var filtered = ko.utils.arrayFilter(self.places(), function(place) {
+            var filtered = ko.utils.arrayFilter(self.places(), function (place) {
                 // reset all markers as invisible
                 place.marker.setVisible(false);
                 var string = place.name().toLowerCase();
                 // return all places that match filter query by name
                 return (string.indexOf(filter) !== -1);
             });
-            filtered.forEach( function(place) {
+            filtered.forEach(function (place) {
                 // for each place returned in filtered array, set marker to visible
                 place.marker.setVisible(true);
             });
@@ -239,7 +240,7 @@ var map,
 function initMap() {
     console.log("init map");
     // set map center to Ballard, Seattle
-    var ballard = new google.maps.LatLng(47.6686195,-122.3828064);
+    var ballard = new google.maps.LatLng(47.6686195, -122.3828064);
 
     map = new google.maps.Map(document.getElementById('map'), {
         center: ballard,
@@ -262,7 +263,7 @@ function initMap() {
     });
 
     //Make Google Map responsive by centering map on window resize.
-    google.maps.event.addDomListener(window, "resize", function() {
+    google.maps.event.addDomListener(window, "resize", function () {
         var center = map.getCenter();
         google.maps.event.trigger(map, "resize");
         map.setCenter(center);
@@ -270,7 +271,7 @@ function initMap() {
 
     // add listener to map so that clicking outside of infowindow will close it
     // and deselect place
-    google.maps.event.addListener(map, "click", function(event) {
+    google.maps.event.addListener(map, "click", function (event) {
         if (infowindow) {
             infowindow.close();
             vm.selectPlace(null);
@@ -278,7 +279,7 @@ function initMap() {
     });
 
     // callback for nearby search service
-    var request  = {
+    var request = {
         location: ballard,
         radius: '500',
         keyword: 'coffee'
@@ -290,13 +291,12 @@ function initMap() {
 }
 
 // findLocations function stores returned places in places array
-function findLocations(results, status){
+function findLocations(results, status) {
     if (status == google.maps.places.PlacesServiceStatus.OK) {
         // create view model, passing in places array
         vm = new PlaceListViewModel(results);
         ko.applyBindings(vm);
-    }
-    else {
+    } else {
         alert("Google Places Failed to Load. Try again later.");
     }
 }
@@ -306,12 +306,12 @@ function findLocations(results, status){
 // Icon will be 21px wide by 34px high with an origin of 0,0 and anchored at 10,34.
 function makeMarkerIcon(markerColor) {
     var markerImage = new google.maps.MarkerImage(
-        'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|'+ markerColor +
+        'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|' + markerColor +
         '|40|_|%E2%80%A2',
         new google.maps.Size(21, 34),
         new google.maps.Point(0, 0),
         new google.maps.Point(10, 34),
-        new google.maps.Size(21,34));
+        new google.maps.Size(21, 34));
     return markerImage;
 }
 
@@ -327,8 +327,7 @@ function errorMsg(problem) {
 function googleSuccess() {
     if (typeof google !== 'undefined') {
         initMap();
-    }
-    else {
+    } else {
         console.log('google undefined');
         googleError();
     }
