@@ -39,6 +39,9 @@ var Place = function (data, yData, selectPlace, highlight) {
     this.marker.addListener('mouseover', function () {
         highlight(self, highlightedMarker);
     });
+    this.marker.addListener('mouseout', function() {
+        highlight(self, defaultMarker);
+    });
 };
 
 var PlaceListViewModel = function (placesArr) {
@@ -50,9 +53,19 @@ var PlaceListViewModel = function (placesArr) {
         self.panelOpen(!self.panelOpen());
     };
 
+    // change marker color on hover over places in panel view
+    self.hoverMarkers = function(place) {
+        self.highlight(place, highlightedMarker);
+    };
+    self.unhoverMarkers = function(place) {
+        self.highlight(place, defaultMarker);
+    };
+
     var selectedPlace;
-    // this ko observable controls visibility of place details display area
+    // self.showDetails allows you to control dom changes based on place.name
     self.showDetails = ko.observable('');
+    // self.selected allows you to control dom changes based on place.id
+    self.selected = ko.observable('');
     // select place by clicking on place in panel view or on map markers
     self.selectPlace = function (place) {
         if (selectedPlace) {
@@ -63,8 +76,8 @@ var PlaceListViewModel = function (placesArr) {
 
         if (place) {
             // when place is selected, show details in panel and infowindow, highlight marker
-            console.log(place.name);
             self.showDetails(place.id);
+            self.selected(place.name);
             self.highlight(place, highlightedMarker);
             self.populateInfoWindow(place);
         }
@@ -72,7 +85,6 @@ var PlaceListViewModel = function (placesArr) {
         // set selected place
         selectedPlace = place;
     };
-
 
     // set info window details
     self.populateInfoWindow = function (place) {
@@ -169,7 +181,7 @@ var PlaceListViewModel = function (placesArr) {
                 // if yelp api data is returned first
                 if (otherCallbackReturned) {
                     // handle yelp error
-                    if (yData === "error") {
+                    if (yData === 'error') {
                         self.yelpError = true;
                         yData = null;
                         self.places.push(new Place(placeDetails, yData, self.selectPlace, self.highlight));
@@ -179,7 +191,7 @@ var PlaceListViewModel = function (placesArr) {
                 }
             } else {
                 // handle Google Places error
-                errorMsg('Google Places: ' + status + " place: " + nearbyPlace.name);
+                errorMsg('Google Places: ' + status + ' place: ' + nearbyPlace.name);
             }
             // set otherCallbackReturned to true if this callback executes first
             otherCallbackReturned = true;

@@ -4,7 +4,7 @@
         <title>Coffee Finder</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="utf-8">
-        <link rel="stylesheet" href="css/style.css">
+        <link rel="stylesheet" href="css/style.min.css">
     </head>
     <body>
         <aside data-bind="css: { 'openPanelPanel': panelOpen }" id="sidePanel">
@@ -16,7 +16,7 @@
                 <div id="place-list">
                     <ul class="results" data-bind="foreach: filteredList">
                         <li class="result-item">
-                            <h4><a href="#" data-bind="text: name, click: $parent.selectPlace, css: { highlightedPlace : $parent.showDetails() == name }" class="inner-text name"></a></h4>
+                            <h4><a href="#" data-bind="text: name, click: $parent.selectPlace, css: { highlightedPlace : $parent.selected() == name }, event: { mouseover: $parent.hoverMarkers, mouseout: $parent.unhoverMarkers }" class="inner-text name"></a></h4>
                             <div data-bind="visible: $parent.showDetails() == id" class="place-details-box">
                                 <p data-bind="text: address" class="sidepanel-details"></p>
                                 <a data-bind="attr: {href: website}" class="sidepanel-details">website</a>
