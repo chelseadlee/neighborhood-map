@@ -58,14 +58,14 @@ var PlaceListViewModel = function (placesArr) {
         self.highlight(place, highlightedMarker);
     };
     self.unhoverMarkers = function(place) {
-        self.highlight(place, defaultMarker);
+        if (place !== selectedPlace) {
+            self.highlight(place, defaultMarker);
+        }
     };
 
     var selectedPlace;
     // self.showDetails allows you to control dom changes based on place.name
     self.showDetails = ko.observable('');
-    // self.selected allows you to control dom changes based on place.id
-    self.selected = ko.observable('');
     // select place by clicking on place in panel view or on map markers
     self.selectPlace = function (place) {
         if (selectedPlace) {
@@ -77,7 +77,6 @@ var PlaceListViewModel = function (placesArr) {
         if (place) {
             // when place is selected, show details in panel and infowindow, highlight marker
             self.showDetails(place.id);
-            self.selected(place.name);
             self.highlight(place, highlightedMarker);
             self.populateInfoWindow(place);
         }
