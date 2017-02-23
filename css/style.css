@@ -9,35 +9,25 @@ html, body {
 #sidePanel {
     height: 100%;
     z-index: 1;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     list-style: none;
     background: #311D1D;
     transition: 0.5s; /* 0.5 second transition effect to slide in the sidePanel */
-    overflow-y: scroll;
-    overflow-x: hidden;
-}
-
-/* Open and Close panel position styling */
-.openSidePanel{
-    width: 275px !important;
-}
-.closeSidePanel{
     width: 0;
 }
-.closeMain {
-    margin-left: 0;
+.openPanelPanel{
+    width: 245px !important;
 }
-.openMain {
-    margin-left: 275px !important;
-}
-
 @media screen and (max-height: 450px) {
     #sidePanel {padding-top: 15px;}
-    #sidePanel {font-size: 18px;}
 }
 
+@media screen and (max-height: 480px) {
+    #place-list {height: 50% !important;}
+    #bottom {height: 20% !important;}
+}
 /* scroll bar */
 ::-webkit-scrollbar {
     width: 10px;
@@ -51,22 +41,34 @@ html, body {
 body {
     scrollbar-face-color: #c74438; /* ie */
 }
-
+#container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
 #filters, #place-list {
-    width: 90%;
-    margin: 0 0.6em;
+    width: 100%;
+    margin: 0 0 0 0.6em;
+}
+#place-list {
+    border-top: 1px solid #655656;
+    margin-top: 1em;
+    height: 70%;
+    position: absolute;
+    overflow-y: scroll;
+    top: 130px;
 }
 .results {
     list-style-type: none;
     margin: 0;
     padding: 0;
-}
-#place-list {
-    border-top: 1px solid #655656;
-    margin-top: 1em;
+    height: 85%;
+    overflow: auto;
 }
 #filters {
-    margin-bottom: 1em;
+    min-height: 100px;
+    position: absolute;
+    top: 0;
 }
 .inner-text {
     display: block;
@@ -122,6 +124,32 @@ a.name:hover {
     font-size: 0.7em;
     padding: 2px;
 }
+#bottom {
+    color: #E5E3E3;
+    background-color: rgba(199, 68, 56, 0.23);
+    position: absolute;
+    bottom: 0;
+    width: 275px;
+    font-size: .9em;
+    padding: 0 5px;
+    min-height: 50px;
+    height: 10%;
+}
+#bottom a{
+    color: #C74438;
+    text-decoration: none;
+}
+#bottom a:hover {
+    font-weight: 700;
+    font-size: 1em;
+}
+.copyright {
+    color: #655656;
+}
+.copyright a{
+    color: #655656 !important;
+    text-decoration: none;
+}
 #main {
     transition: margin-left .5s;
     width: 100%;
@@ -131,6 +159,10 @@ a.name:hover {
     overflow: hidden;
     padding-left: 50px;
     background-color: #655656;
+    margin-left: 0;
+}
+.openPanelMain {
+    margin-left: 245px !important;
 }
 #toggle-nav-button {
     display: inline-block;

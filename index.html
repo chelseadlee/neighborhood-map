@@ -4,56 +4,54 @@
         <title>Coffee Finder</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta charset="utf-8">
-        <link rel="stylesheet" href="css/style.min.css">
+        <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-        <aside id="sidePanel" class="closeSidePane">
-            <section id="filters">
-                <h2 class="inner-text">Coffee Finder</h2>
-                <p class="inner-text">Filter Coffee Shops by Name: <input data-bind="textInput: queryText" /></p>
-            </section>
-            <section id="place-list">
-                <ul class="results" data-bind="foreach: filteredList">
-                    <li class="result-item">
-                        <h4><a href="#" data-bind="text: name, click: $parent.selectPlace, css: { highlightedPlace : $parent.showDetails() == name }" class="inner-text name"></a></h4>
-                        <section data-bind="visible: $parent.showDetails() == name" class="place-details-box">
-                            <p data-bind="text: address" class="sidepanel-details"></p>
-                            <a data-bind="attr: {href: website}" class="sidepanel-details">website</a>
-                            <p data-bind="text: phone" class="sidepanel-details"></p>
-                            <div data-bind="html: linkedGoogleRating" id="panel-google" class="sidepanel-details panelRatingLink"></div>
-                            <!-- ko if: yelpRating() -->
-                            <p data-bind="html: linkedYelpRating" id="panel-yelp" class="sidepanel-details panelRatingLink"></p>
-                            <!-- /ko -->
-                            <!-- ko ifnot: yelpRating() -->
-                            <div data-bind="text: yelpError" class="sidepanel-details error panelRatingLink"></div>
-                            <!-- /ko -->
-                        </section>
-                    </li>
-                </ul>
-                <div>
-                    <span data-bind="visible: filteredList().length == 0" class="inner-text">No Results. Try another search.</span>
+        <aside data-bind="css: { 'openPanelPanel': panelOpen }" id="sidePanel">
+            <div id="container">
+                <div id="filters">
+                    <h2 class="inner-text">Coffee Finder</h2>
+                    <p class="inner-text">Filter Coffee Shops by Name: <input data-bind="textInput: queryText" /></p>
                 </div>
-            </section>
+                <div id="place-list">
+                    <ul class="results" data-bind="foreach: filteredList">
+                        <li class="result-item">
+                            <h4><a href="#" data-bind="text: name, click: $parent.selectPlace, css: { highlightedPlace : $parent.showDetails() == name }" class="inner-text name"></a></h4>
+                            <div data-bind="visible: $parent.showDetails() == id" class="place-details-box">
+                                <p data-bind="text: address" class="sidepanel-details"></p>
+                                <a data-bind="attr: {href: website}" class="sidepanel-details">website</a>
+                                <p data-bind="text: phone" class="sidepanel-details"></p>
+                                <div data-bind="html: linkedGoogleRating" id="panel-google" class="sidepanel-details panelRatingLink"></div>
+                                <!-- ko if: yelpRating() -->
+                                <p data-bind="html: linkedYelpRating" id="panel-yelp" class="sidepanel-details panelRatingLink"></p>
+                                <!-- /ko -->
+                                <!-- ko ifnot: yelpRating() -->
+                                <div data-bind="text: yelpError" class="sidepanel-details error panelRatingLink"></div>
+                                <!-- /ko -->
+                            </div>
+                        </li>
+                    </ul>
+                    <div>
+                        <span data-bind="visible: filteredList().length == 0" class="inner-text">No Results. Try another search.</span>
+                    </div>
+                </div>
+                <div id="bottom">
+                    <p>Powered by <a href="http://www.maps.google.com">Google Maps</a> and <a href="http://www.yelp.com">Yelp</a><br /><span class="copyright">Created by <a href="http://www.chelsealee.net">Chelsea Lee</a></span></p>
+                </div>
+            </div>
         </aside>
 
-        <main id="main" class="container closeMain">
-            <div id="toggle-nav-button"></div>
+        <main data-bind="css: {'openPanelMain': panelOpen }" id="main">
+            <div data-bind="click: toggleExpand()" id="toggle-nav-button"></div>
             <div id="map"></div>
         </main>
+        <footer>
+            <script src="js/lib/jquery.min.js"></script>
+            <script src="js/lib/knockout.js"></script>
+            <script src="js/lib/oauth-signature.min.js"></script>
+            <script src="js/app.js"></script>
+            <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=googleSuccess" onerror="googleError()"></script>
+        </footer>
     </body>
-    <footer>
-        <script src="js/lib/jquery.min.js"></script>
-        <script src="js/lib/knockout.js"></script>
-        <script src="js/lib/oauth-signature.min.js"></script>
-        <script src="js/app.js"></script>
-        <script async defer src="https://maps.googleapis.com/maps/api/js?libraries=places,geometry&key=AIzaSyDC-nQZppbDK2LMwBkE3isNA1CgjJV4Vnc&v=3&callback=googleSuccess" onerror="googleError()"></script>
-        <script>
-            $(document).ready(function() {
-                $("#toggle-nav-button").on("click", function() {
-                    $("#sidePanel").toggleClass("openSidePanel");
-                    $("#main").toggleClass("openMain");
-                });
-            })
-        </script>
-    </footer>
+
 </html>

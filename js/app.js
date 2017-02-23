@@ -35,16 +35,20 @@ var Place = function (data, yData, selectPlace, highlight) {
     }
     this.marker.addListener('click', function () {
         selectPlace(self);
-        console.log(self.name);
     });
     this.marker.addListener('mouseover', function () {
         highlight(self, highlightedMarker);
-        console.log('mouseover');
     });
 };
 
 var PlaceListViewModel = function (placesArr) {
     var self = this;
+
+    // toggle side panel
+    self.panelOpen = ko.observable(false);
+    self.toggleExpand = function() {
+        self.panelOpen(!self.panelOpen());
+    };
 
     var selectedPlace;
     // this ko observable controls visibility of place details display area
@@ -60,7 +64,7 @@ var PlaceListViewModel = function (placesArr) {
         if (place) {
             // when place is selected, show details in panel and infowindow, highlight marker
             console.log(place.name);
-            self.showDetails(place.name);
+            self.showDetails(place.id);
             self.highlight(place, highlightedMarker);
             self.populateInfoWindow(place);
         }
@@ -151,7 +155,7 @@ var PlaceListViewModel = function (placesArr) {
 
     self.yelpError = false;
     // get google place details by looping through nearby places
-    placesArr.slice(0, 3).forEach(function (nearbyPlace) {
+    placesArr.forEach(function (nearbyPlace) {
         var otherCallbackReturned = false;
         var googlePlaceDetails = null;
         var yData = null;
@@ -175,7 +179,7 @@ var PlaceListViewModel = function (placesArr) {
                 }
             } else {
                 // handle Google Places error
-                errorMsg('Google Places');
+                errorMsg('Google Places: ' + status + " place: " + nearbyPlace.name);
             }
             // set otherCallbackReturned to true if this callback executes first
             otherCallbackReturned = true;
@@ -185,7 +189,7 @@ var PlaceListViewModel = function (placesArr) {
         // get yelp data if google data is returned first
         // TODO: set up promises...
         self.getYelpData(nearbyPlace, function (results) {
-            if (otherCallbackReturned) {
+            if (otherCallbackReturned && googlePlaceDetails) {
                 // handle yelp error
                 if (results === 'error') {
                     self.yelpError = true;
@@ -213,6 +217,9 @@ var PlaceListViewModel = function (placesArr) {
             var unfiltered = ko.utils.arrayFilter(self.places(), function (place) {
                 place.marker.setVisible(true);
             });
+            if (infowindow) {
+                infowindow.close();
+            }
             return self.places();
         } else {
             var filtered = ko.utils.arrayFilter(self.places(), function (place) {
@@ -332,7 +339,6 @@ function googleSuccess() {
         initMap();
     } else {
         console.log('google undefined');
-        googleError();
     }
 }
 
