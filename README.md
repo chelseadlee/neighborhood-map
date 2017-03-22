@@ -1,19 +1,18 @@
-#Coffee Finder App
+# Coffee Finder App
 This is my submission for the Udacity Project 5 Neighborhood Map project. It features a map of coffee shops in the Ballard neighborhood of Seattle, WA.
 
-##To Run
+## To Run
 [Click here to run.](https://chelseadlee.github.io/neighborhood-map/) Or fork repo, and open up index.html in any browser.
 
-##To Use
+## To Use
 Open app on any device. Click on markers to view coffee shop information, with Yelp and Google rating info.
 
-
-###Built with:
+### Built with:
 * Google Maps API
 * Yelp API 2.0
 * Knockout JS
 * jQuery
 * OAuth
 
-###Author
+### Author
 Chelsea Lee
