@@ -341,7 +341,7 @@ function makeMarkerIcon(markerColor) {
 // general error message
 function errorMsg(problem) {
     console.log('error loading ' + problem);
-    alert('Error loading ' + problem + '. Please try again later!');
+    console.log('Error loading ' + problem + '.');
 }
 
 // Google Maps async load callback
